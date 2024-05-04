@@ -1,81 +1,70 @@
-const axios = require('axios');
-const fs = require('fs-extra');
-const MAX_IMAGE_LIMIT = 50;
+const axios = require("axios");
+const fs = require("fs-extra");
+const path = require("path");
 
 module.exports = {
   config: {
-    name: 'pinterest',
-    aliases: ['pin'],
-    version: '1.2',
-    author: 'SiAM | Modified by RUBISH',
-    countDown: 0,
+    name: "pinterest",
+    aliases: ["pin"],
+    version: "1.0.2",
+    author: "JVB",
     role: 0,
-    category: '𝗨𝗧𝗜𝗟𝗜𝗧𝗬',
+    countDown: 50,
     shortDescription: {
-      en: "Search for images on Pinterest",
+      en: "Search for images on Pinterest"
     },
     longDescription: {
-      en: "Pinterest image search ",
+      en: ""
     },
+    category: "image",
     guide: {
-      en: "{pn} 'keyword' -'number of search results'\nExample: {pn} 'cats' -10\nIf no number is provided, the command will return the first 5 images.",
-    },
+      en: "{prefix}pinterest <search query> -<number of images>"
+    }
   },
 
-  onStart: async function ({ api, args, event, message }) {
-    const { getPrefix } = global.utils;
-    const p = getPrefix(event.threadID);
-
-    let keyword = args.join(' ');
-    let numberSearch = 5;
-    const match = keyword.match(/(.+?)\s*-?(\d+)?$/);
-    if (match) {
-      keyword = match[1].trim();
-      if (match[2]) {
-        numberSearch = parseInt(match[2]);
-      }
-    }
-
-    if (!keyword) {
-      api.sendMessage("⚠ | Please provide a keyword.\nExample: Pinterest 'naruto' -6", event.threadID, event.messageID);
-      return;
-    }
-
-    if (numberSearch > MAX_IMAGE_LIMIT) {
-      api.sendMessage(`⚠ | Maximum Image search Limit -> ${MAX_IMAGE_LIMIT} images`, event.threadID, event.messageID);
-      return;
-    }
-
+  onStart: async function ({ api, event, args, usersData }) {
     try {
-      const res = await axios.get(`https://mesbah-apis.onrender.com/api/v1/pinterest?search=${encodeURIComponent(keyword)}`);
-      const data = res.data.data;
-      let num = 0;
-      const img = [];
+      const userID = event.senderID;
 
-      for (let i = 0; i < numberSearch && i < data.length; i++) {
-        const path = __dirname + `/tmp/${num += 1}.jpg`;
-        const imageUrl = data[i];
-        const getImage = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-        fs.writeFileSync(path, Buffer.from(getImage.data, 'binary'));
-        img.push(fs.createReadStream(path));
+      const keySearch = args.join(" ");
+      if (!keySearch.includes("-")) {
+        return api.sendMessage(`Please enter the search query and number of images to return in the format: ${this.config.guide.en}`, event.threadID, event.messageID);
+      }
+      const keySearchs = keySearch.substr(0, keySearch.indexOf('-')).trim();
+      const numberSearch = parseInt(keySearch.split("-").pop().trim()) || 6;
+
+      const res = await axios.get(`https://celestial-dainsleif-v2.onrender.com/pinterest?pinte=${encodeURIComponent(keySearchs)}`);
+      const data = res.data;
+
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        return api.sendMessage(`No image data found for "${keySearchs}". Please try another search query.`, event.threadID, event.messageID);
       }
 
-      api.sendMessage({
-        body: `
+      const imgData = [];
 
-Total Image: "${numberSearch}"
-Searched: "${keyword}"
-`,
-        attachment: img
+      for (let i = 0; i < Math.min(numberSearch, data.length); i++) {
+        const imageUrl = data[i].image;
+
+        try {
+          const imgResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+          const imgPath = path.join(__dirname, 'cache', `${i + 1}.jpg`);
+          await fs.outputFile(imgPath, imgResponse.data);
+          imgData.push(fs.createReadStream(imgPath));
+        } catch (error) {
+          console.error(error);
+          // Handle image fetching errors (skip the problematic image)
+        }
+      }
+
+      await api.sendMessage({
+        attachment: imgData,
+        body: `Total Image: "${imgData.length}"\nSearched: "${keySearchs}":`
       }, event.threadID, event.messageID);
 
-      for (let ii = 1; ii < num; ii++) {
-        fs.unlinkSync(__dirname + `/tmp/${ii}.jpg`);
-      }
-    } catch (err) {
-      console.error(err);
-      api.sendMessage("⚠ | There is a problem when scraping images from Pinterest.\n\nPlease try with a different search input or change the spelling...!", event.threadID, event.messageID);
-      return;
+      await fs.remove(path.join(__dirname, 'cache'));
+    } catch (error) {
+      console.error(error);
+      return api.sendMessage(`An error occurred. Please try again later.`, event.threadID, event.messageID);
     }
   }
 };
