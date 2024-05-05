@@ -2,10 +2,10 @@ const fs = require('fs');
 
 module.exports = {
   config: {
-    name: "shuffleCup",
-    aliases: ["cupGame", "sc", "cg"],
+    name: "shuffle-cup",
+    aliases: ["cupGame", "cs", "cg"],
     version: "1.0",
-    author: "sheikh farid",
+    author: "Sheikh Farid",
     role: 0,
     countdown: 10,
     reward: Math.floor(Math.random() * (100 - 50 + 1) + 50),
@@ -22,9 +22,6 @@ module.exports = {
   },
 
   onStart: async function ({ message, event, commandName, api }) {
-if (this.config !== "sheikh farid") {
-message.reply("you changed the author name ? (real author sheikh)");
-}
     const cups = ["⚫", "🔴", "🟠", "🟡", "🟢", "🔵", "🟤"];
     let shuffledCups = shuffleArray(cups).slice(0, 3);
     const balls = shuffledCups.join(" ");
@@ -85,8 +82,6 @@ async function editWithDelay(api, uid, text, delay) {
   await new Promise(resolve => setTimeout(resolve, delay));
   await api.editMessage(text, uid);
 }
-
-
 
 function shuffleCupsText(cups) {
   return `Shuffling cups...\n${cups.join("")}`;
