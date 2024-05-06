@@ -21,14 +21,14 @@ module.exports = {
 	langs: {
 		en: {
 			added: "✅ | Added whiteList role for %1 users:\n%2",
-			alreadyAdmin: "\n⚠️ | %1 users already have whiteList role:\n%2",
-			missingIdAdd: "⚠️ | Please enter ID or tag user to add in whiteListIds",
+			alreadyAdmin: "\n⚠ | %1 users already have whiteList role:\n%2",
+			missingIdAdd: "⚠ | Please enter ID or tag user to add in whiteListIds",
 			removed: "✅ | Removed whiteList role of %1 users:\n%2",
-			notAdmin: "⚠️ | %1 users don't have whiteListIds role:\n%2",
-			missingIdRemove: "⚠️ | Please enter ID or tag user to remove whiteListIds",
+			notAdmin: "⚠ | %1 users don't have whiteListIds role:\n%2",
+			missingIdRemove: "⚠ | Please enter ID or tag user to remove whiteListIds",
 			listAdmin: "👑 | List of whitelistIDs:\n%1",
-      enable: "Turned on the mode only specific whiteListIds can use bot",
-      disable: "Turned on the mode only specific whiteListIds can use bot"
+      enable: "Turned on the mode only specific whiteList IDs can use CaT Ara! ☑️",
+      disable: "Turned off the mode! ✅"
 		}
 	},
 
@@ -121,4 +121,4 @@ module.exports = {
                 return message.SyntaxError();
         }
     }
-}; 
+};
