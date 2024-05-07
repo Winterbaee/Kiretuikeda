@@ -1,69 +1,147 @@
 const fs = require("fs-extra");
+const axios = require("axios");
 const ytdl = require("ytdl-core");
 const yts = require("yt-search");
-const axios = require('axios');
 
 module.exports = {
   config: {
     name: "sing",
     aliases: ["song","play"],
-    version: "1.0",
-    author: "NZ R",
+    version: "2.0",
+    author: "Abdul Kaiyum",
+    countDown: 5,
+    role: 0,
+    shortDescription: {
+      en: "Play songs, get lyrics, and manage a playlist.",
+    },
+    longDescription: {
+      en: "Play songs by name, fetch lyrics, or manage a playlist.",
+    },
     category: "music",
-    dependencies: {
-      "fs-extra": "",
-      "ytdl-core": "",
-      "yt-search": "",
-      "axios": ""
+    guide: {
+      en: "{pn} <song name>\n{pn} playlist -a <song name>\n{pn} playlist -p <index>\n{pn} lyrics <song name>\n\nTo play a song from your playlist, use 'sing playlist play [number]'.",
+    },
+  },
+
+  onStart: async function ({ api, event, args, message, usersData }) {
+    const userID = event.senderID;
+    const userName = await usersData.getName(userID);
+
+    if (args[0] === "playlist") {
+      const action = args[1];
+      const playlists = await this.getPlaylists();
+      const userPlaylist = playlists[userID] || [];
+
+      if (action === "-a" || action === "add") {
+        const songName = args.slice(2).join(" ");
+        userPlaylist.push(songName);
+        playlists[userID] = userPlaylist;
+        await this.savePlaylists(playlists);
+        return message.reply(`🎵 Added "${songName}" to your playlist, ${userName}.`);
+      } else if (action === "-p" || action === "play") {
+        const index = parseInt(args[2]) - 1;
+        if (isNaN(index) || index < 0 || index >= userPlaylist.length) {
+          return message.reply("⚠ Invalid playlist index.");
+        }
+        const songName = userPlaylist[index];
+        await this.playSong(api, event.threadID, songName, userName);
+      } else if (action === "list") {
+        let reply = `🎵 Here's your playlist, ${userName}:\n` + userPlaylist.map((song, i) => `${i + 1}. ${song}`).join("\n");
+        reply += "\n\nReply by number or use 'sing playlist play [number]' to play.";
+        const replyMessage = await message.reply(reply);
+
+        global.GoatBot.onReply.set(replyMessage.messageID, {
+          commandName: this.config.name,
+          userID,
+          userPlaylist,
+        });
+      } else {
+        return message.reply("Invalid action. Use 'playlist -a' to add, 'playlist -p' to play, or 'playlist list' to view your playlist.");
+      }
+    } else if (args[0] === "lyrics") {
+      const songName = args.slice(1).join(" ");
+      const apiUrl = `https://lyrist-woad.vercel.app/api/${encodeURIComponent(songName)}`;
+      try {
+        const response = await axios.get(apiUrl);
+        if (response.data.lyrics) {
+          return message.reply(`🎵 Lyrics for "${response.data.title}" by ${response.data.artist}:\n\n${response.data.lyrics}`);
+        } else {
+          return message.reply("❌ No lyrics found for that song.");
+        }
+      } catch (error) {
+        console.error("Error fetching lyrics:", error);
+        return message.reply("❌ An error occurred while fetching the lyrics.");
+      }
+    } else {
+      const songName = args.join(" ");
+      await this.playSong(api, event.threadID, songName, userName);
     }
   },
 
-  onStart: async ({ api, event, usersData }) => {
-    api.setMessageReaction("⏳", event.messageID, (err) => {}, true);
-    
+  async getPlaylists() {
     try {
-      const input = event.body;
-      const query = input.substring(6).trim();
+      const playlistsData = await fs.readFile("playlists.json", "utf8");
+      return JSON.parse(playlistsData);
+    } catch (error) {
+      return {};
+    }
+  },
 
-      if (!query) {
-        api.setMessageReaction("❌", event.messageID, () => {}, true);
-        return api.sendMessage("Hey there! Please provide a song title, so I can search for it and sing it for you! 🎤", event.threadID);
+  async savePlaylists(playlists) {
+    await fs.writeFile("playlists.json", JSON.stringify(playlists), "utf8");
+  },
+
+  async playSong(api, threadID, songName, userName) {
+    try {
+      const searchResults = await yts(songName);
+      if (searchResults.videos.length === 0) {
+        return api.sendMessage("❌ No videos found for that song.", threadID);
       }
+      const video = searchResults.videos[0];
+      const videoUrl = video.url;
 
-      const user = event.senderID;
-      const userName = await usersData.getName(user);
+      const stream = ytdl(videoUrl, { filter: "audioonly" });
 
-      const searchResults = await yts(query);
-
-      if (!searchResults.videos.length) {
-        api.setMessageReaction("❌", event.messageID, () => {}, true);
-        return api.sendMessage("Oops! I couldn't find any relevant results for this song title. Could you please try another one?", event.threadID);
-      }
-
-      const music = searchResults.videos[0];
-
-      const stream = ytdl(music.url, { filter: "audioonly" });
-
-      const fileName = `${Date.now()}_${music.title.replace(/\s+/g, '_')}.mp3`;
-      const filePath = `${__dirname}/cache/${fileName}`;
+      const fileName = `music.mp3`;
+      const filePath = `./cache/${fileName}`;
 
       stream.pipe(fs.createWriteStream(filePath));
 
-      stream.on('end', () => {
-        const message = {
-          body: `🎵 Here's the song you requested Enjoy ${userName}..!!🎤\n\nTitle: ${music.title}\nDuration: ${music.duration.timestamp}\nYouTube Link: ${music.url}`,
-          attachment: fs.createReadStream(filePath)
-        };
-
-        api.sendMessage(message, event.threadID, () => {
+      stream.on("end", async () => {
+        const fileStats = fs.statSync(filePath);
+        if (fileStats.size > 25 * 1024 * 1024) {
           fs.unlinkSync(filePath);
-          api.setMessageReaction("✅", event.messageID, () => {}, true);
-        });
+          return api.sendMessage("❌ The song is too large to send (>25MB).", threadID);
+        }
+
+        const messageBody = `🎵 Here's the song you requested, ${userName}. Enjoy!\n\nTitle: ${video.title}\nDuration: ${video.timestamp}\nYouTube Link: ${videoUrl}`;
+
+        api.sendMessage(
+          {
+            body: messageBody,
+            attachment: fs.createReadStream(filePath),
+          },
+          threadID,
+          () => {
+            fs.unlinkSync(filePath);
+          }
+        );
       });
     } catch (error) {
-      console.error('[ERROR]', error);
-      api.sendMessage("Oops! Something went wrong while processing your request. Please try again later.", event.threadID);
-      api.setMessageReaction("❌", event.messageID, () => {}, true);
+      console.error("Error playing song:", error);
+      api.sendMessage("❌ An error occurred while playing the song.", threadID);
     }
-  }
+  },
+
+  onReply: async function ({ api, event, Reply }) {
+    const replyIndex = parseInt(event.body);
+    const { userPlaylist } = Reply;
+
+    if (isNaN(replyIndex) || replyIndex < 1 || replyIndex > userPlaylist.length) {
+      return api.sendMessage("⚠ Invalid playlist index.", event.threadID);
+    }
+
+    const songName = userPlaylist[replyIndex - 1];
+    await this.playSong(api, event.threadID, songName);
+  },
 };
