@@ -1,4 +1,4 @@
--cmd install sing.js const fs = require("fs-extra");
+const fs = require("fs-extra");
 const ytdl = require("ytdl-core");
 const yts = require("yt-search");
 const axios = require('axios');
