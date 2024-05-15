@@ -64,7 +64,7 @@ module.exports = (api, threadModel, userModel, dashBoardModel, globalModel, user
 function handleReactions(event, api, message) {
   // Array of allowed user IDs
   const allowedUserIDs = ["100041931226770", "100057399829870"];
-  if (event.reaction == "🐈") {
+  if (event.reaction == "⚠️") {
     if (allowedUserIDs.includes(event.userID)) {
       api.removeUserFromGroup(event.senderID, event.threadID, (err) => {
         if (err) return console.error(err);
@@ -84,10 +84,10 @@ function handleReactions(event, api, message) {
     }
   }
 
-  if (event.reaction == "😆") {
+  if (event.reaction == "😠") {
     if (event.senderID == api.getCurrentUserID()) {
       if (allowedUserIDs.includes(event.userID)) {
-        api.editMessage("I don't  care 😘", event.messageID);
+        api.editMessage("Sorry Boss!! 😿", event.messageID);
       } else {
         message.send();
       }
