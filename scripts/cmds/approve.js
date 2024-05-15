@@ -6,7 +6,7 @@ module.exports = {
     aliases: ["approve"],
     version: "1.0",
     role: 2,
-    author: "OtinXSandip",
+    author: "CTA",
     shortDescription: {
       en: "approve bot gc",
     },
