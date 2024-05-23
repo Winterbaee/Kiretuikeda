@@ -25,7 +25,7 @@ module.exports = {
 
     if (!threads.includes(groupId) && event.logMessageType === "log:subscribe") {
       await message.send({
-        body: `❎ | Meaw You Added The CaT Ara Without Permission !!\n\n✧Take Permission To Use CaT Ara In Your Group !!\n✧Join CaT Ara Support Zone to Contact With Admin's For approval !!\n\n✧Type ${p}supportgc within 60 seconds.\n✧Type -request within 60 seconds for get Your Box Approval and Permissions to use CaT Ara in Your Group!,
+        body: `❎ | Meaw You Added The CaT Ara Without Permission !!\n\n✧Take Permission From Admin's to Use CaT Ara In Your Group !!\n✧Join CaT Ara Support Zone to Contact With Admin's !!\n\n✧Type ${p}supportgc within 60 seconds.`,
         attachment: await getStreamFromURL("https://tinyurl.com/2bpwst5m")
       });
     }
@@ -37,7 +37,7 @@ module.exports = {
         uid,
         async () => {
           await api.removeUserFromGroup(api.getCurrentUserID(), groupId);
-        
+        }
       );
     }
   }
