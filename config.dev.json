@@ -9,37 +9,24 @@
     "intervalGetNewCookie": 1440,
     "notes": "time the system automatically retrieves new cookies from email/password, unit is minute, if you set null, the system will not automatically retrieve new cookies, it saves you from having to manually change your cookie every time it expires. recommended set to 1440 (1day) or 4320 (3day).TO BE ABLE TO USE THIS FEATURE YOU NEED TO ENTER THE ACCOUNT PASSWORD ABOVE"
   },
-  "antiInbox": true,
+  "antiInbox": false,
   "language": "en",
   "notesLanguage": "change to your language with ISO 639-1 code, available languages: vi (Vietnamese), en (English)",
   "adminOnly": {
     "enable": false,
-    "ignoreCommand": [
-      "clear"
-    ],
+    "ignoreCommand": [],
     "hideNotiMessage": true
   },
   "adminBot": [
     "100080099546468",
     "100041931226770",
     "100057399829870",
-    "61557519455411",
+    "100042061672382",
     "100091084029785",
-    "100042061672382"],
+    "61557519455411"],
   "whiteListMode": {
     "enable": false,
-    "whiteListIds": [
-      "100080099546468",
-      "100041931226770",
-      "100057399829870",
-      "61557519455411",
-      "100091084029785",
-      "100042061672382",
-      "100062127322485",
-      "100075036630413",
-      "100077098943681",
-      "100025475539441",
-      "100029185118069"],
+    "whiteListIds": [],
     "notes": "if you enable this feature, only the ids in the whiteListIds section can use the bot"
   },
   "nickNameBot": "~CaT♡",
@@ -55,9 +42,9 @@
   "credentials": {
     "gmailAccount": {
       "email": "esteliaelora57@gmail.com",
-      "clientId": "709309722944-gckav5m3ee2mf6b6r9rrm3d9spdnhq6a.apps.googleusercontent.com",
-      "clientSecret": "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",
-      "refreshToken": "1//048leNJIqUkzzCgYIARAAGAQSNwF-L9IrQ_Y-ANoIdwEcGOlzZ9a3XO4OBGaG4rUV_6HaBuy7-KsyONaGkZtEouYEPf0DBCl7T8k",
+      "clientId": "134483285553-6hkt4lihso45m3ehl6fq96lprj1k7kcc.apps.googleusercontent.com",
+      "clientSecret": "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",
+      "refreshToken": "1//04edHJ82qjM8cCgYIARAAGAQSNwF-L9Irz41oCPFQhvUADkXLtmK_xL4XTW9TaeOzhIC7nF5_9lBphQ3GHnHYnprWOn_DinXrzkw",
       "apiKey": ""
     },
     "gRecaptcha": {
@@ -99,7 +86,7 @@
   "autoReloginWhenChangeAccount": false,
   "autoRestartWhenListenMqttError": false,
   "restartListenMqtt": {
-    "enable": true,
+    "enable": false,
     "timeRestart": 580000,
     "delayAfterStopListening": 2000,
     "logNoti": true,
@@ -126,7 +113,7 @@
   },
   "hideNotiMessage": {
     "commandNotFound": false,
-    "adminOnly": true,
+    "adminOnly": false,
     "threadBanned": false,
     "userBanned": false,
     "needRoleToUseCmd": false,
@@ -155,11 +142,5 @@
     "autoMarkDelivery": false,
     "autoReconnect": false,
     "notes": "Document here: https://github.com/ntkhang03/fb-chat-api/blob/master/DOCS.md#apisetoptionsoptions "
-  },
-  "whiteListModeThread": {
-    "enable": false,
-    "whiteListThreadIds": [],
-    "notes": "if you enable this feature, only the thread in the whiteListThreadIds list can use the bot",
-    "how_it_work": "if you enable both whiteListMode and whiteListModeThread, the system will check if the user is in whiteListIds, then check if the thread is in whiteListThreadIds, if one of the conditions is true, the user can use the bot"
   }
 }
