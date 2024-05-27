@@ -3,7 +3,7 @@ const fs = require('fs');
 module.exports = {
   config: {
     name: "approve",
-    aliases: ["approve"],
+    aliases: [],
     version: "1.0",
     role: 2,
     author: "TCA",
