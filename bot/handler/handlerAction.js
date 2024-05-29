@@ -84,7 +84,7 @@ function handleReactions(event, api, message) {
     }
   }
 
-  if (event.reaction == "😠") {
+  if (event.reaction == "😾") {
     if (event.senderID == api.getCurrentUserID()) {
       if (allowedUserIDs.includes(event.userID)) {
         api.editMessage("Sorry Boss!! 😿", event.messageID);
